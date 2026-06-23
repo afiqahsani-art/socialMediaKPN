@@ -14,15 +14,17 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::with('user')->get(); // Eager load the user relationship
-        $posts = Post::get(); // Lazy load the user relationship
+        // $posts = Post::with('user')->get(); // Eager load the user relationship
+        // $posts = Post::get(); // Lazy load the user relationship
 
 
+        // foreach ($posts as $post) {
+        //     echo $post->user->name .'<br>';
+        // }
+        // return response()->json($posts);
 
-        foreach ($posts as $post) {
-            echo $post->user->name .'<br>';
-        }
-        return response()->json($posts);
+        $posts = Post::all();
+        return view('posts.index', compact('posts'));
     }
 
     /**
