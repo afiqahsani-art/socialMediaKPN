@@ -77,7 +77,18 @@ function timeAgo(dateString) {
                             <p class="text-xs font-semibold uppercase tra cking-wide text-gray-400 mb-2">
                                 Comments ({{ post.comments.length }})
                             </p>
+                            <div v-for="comment in post.comments" :key="comment.id" class="flex items-start gap-2 rounded-lg bg-gray-50 p3">
+                                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-rose-500 text-xs font-semibold text-white">
+                                    {{ avatar(comment.user?.name) }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ comment.user?.name }}</p>
+                                    <p class="text-sm text-gray-700">{{ comment.content }}</p>
+                                    <p class="text-xs text-gray-400">{{ timeAgo(comment.created_at) }}</p>
+                                </div>
+                            </div>
                         </div>
+                        <p v-else class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">No Comments Yet</p>
                     </div>
                 </div>
             </div>s

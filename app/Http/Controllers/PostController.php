@@ -23,9 +23,11 @@ class PostController extends Controller
         //     echo $post->user->name .'<br>';
         // }
         // return response()->json($posts);
-        $posts = Post::with('user', 'comments')->get();
+        $posts = Post::with('user', 'comments.user')->get();
+        $name = 'John Doe';
         return Inertia::render('Posts/Index', [
             'posts' => $posts,
+            'name' => $name,
         ]);
         // return view('posts.index', compact('posts'));
     }
