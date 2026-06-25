@@ -1,10 +1,39 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 
 defineProps({
     posts: Array,
+    name: String,
 });
+
+const authUser = usePage().props.auth.user;
+
+const postForm = useForm({
+    content: '',
+});
+
+const activeCommentForms = reactive({});
+
+function submitForm() {
+    postForm.post(route('posts.store'), {
+        onSuccess: () => {
+            postForm.reset();
+        },
+    });
+}
+
+function submitComment(postId, commentForm) {
+    commentForm.post(route('comments.store', { post: postId }), {
+        onSuccess: () => {
+            commentForm.reset();
+            activeCommentForms[postId] = null; // Reset the active comment form for this post
+        },
+        onError: () => {
+            console.error(errors);
+        },
+    });
+}
 
 function avatar(name) {
     return name ? name.charAt(0).toUpperCase() : '?';
@@ -29,12 +58,24 @@ function timeAgo(dateString) {
     <AuthenticatedLayout>
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Latest Posts
+                Latest Posts for {{ name  }}
             </h2>
         </template>
 
         <div class="py-8">
             <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+                <!-- Post Form-->
+                <form @submit.prevent="submitForm" class="mb-6">
+                    <textarea v-model="postForm.content" placeholder="What's on your mind?"
+                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                    <p v-if="postForm.errors.content" class="mt-1 text-sm text-red-600">{{ postForm.errors.content }}</p>
+                    <div class="mt-2 flex justify-end">
+                        <button type="submit" :disabled="postForm.processing"
+                            class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50 disabled:opacity-50">
+                            Post
+                        </button>
+                    </div>
+                </form>
                 <div v-for="post in posts" :key="post.id"
                     class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
                     <div class="p-5">
@@ -77,12 +118,25 @@ function timeAgo(dateString) {
                             <p class="text-xs font-semibold uppercase tra cking-wide text-gray-400 mb-2">
                                 Comments ({{ post.comments.length }})
                             </p>
+                            <div v-for="comment in post.comments" :key="comment.id"
+                                class="flex items-start gap-3">
+                                <div
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                                    {{ avatar(comment.user?.name) }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">{{ comment.user?.name }}</p>
+                                    <p class="text-sm text-gray-700">{{ comment.content }}</p>
+                                    <p class="text-xs text-gray-400">{{ timeAgo(comment.created_at) }}</p>
+                                </div>                      
+                            </div>
                         </div>
+                        <div v-else class="text-sm text-gray-500">No comments yet.</div>
                     </div>
                 </div>
-            </div>s
+            </div>
         </div>
     </AuthenticatedLayout>
-d
+
 
 </template>

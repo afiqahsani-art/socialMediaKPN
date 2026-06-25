@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+//use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StorePostRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class StorePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return Auth::check(); // Only allow authenticated users to create posts
     }
 
     /**
@@ -23,7 +24,20 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'content' => ['required', 'string', 'min:3', 'max:255'],
+        ];
+    }
+
+    /**
+     * Custom validation messages for post creation.
+     */
+    public function messages(): array
+    {
+        return [
+            'content.required' => 'Sis, fill in the post content. Danke.',
+            'content.string' => 'Must be string ah.',
+            'content.min' => 'Min 3 characters.',
+            'content.max' => 'Max is 255 ny.',
         ];
     }
 }
