@@ -77,7 +77,7 @@ class PostController extends Controller
         return response()->json($posts);
     }
 
-    public function store(Request $request) {
+     public function store(Request $request) {
         $request->validate([
             'content' => 'required|string|max:255',
         ]);
