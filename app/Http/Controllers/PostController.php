@@ -7,6 +7,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -78,6 +79,7 @@ class PostController extends Controller
     {
         $post = new Post();
         $post->content = $request->input('content');
+        $post->uuid = (string) Str::uuid(); // Generate a UUID for the post
         $post->user_id = auth()->id(); // Assuming you have authentication set up
         $post->save();
 
@@ -89,7 +91,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        //
+        dd($post);
     }
 
     /**

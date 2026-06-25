@@ -39,6 +39,32 @@ function deletePost(id) {
     }
 }
 
+const activeCommentPostId = ref(null);
+
+const commentForm = useForm({
+    content: '',
+});
+
+function toggleCommentForm(postId) {
+    if (activeCommentPostId.value === postId) {
+        activeCommentPostId.value = null; // Close the comment form if it's already open for this post
+    } else {
+        activeCommentPostId.value = postId; // Open the comment form for this post
+    }
+}
+
+function submitComment(postId) {
+    commentForm.post(route('comments.store', postId), {
+        onSuccess: () => {
+            commentForm.reset();
+            activeCommentPostId.value = null; // Reset the active comment post ID after successful submission
+        },
+        onError: (errors) => {
+            console.error(errors);
+        },
+    });
+}
+
 function avatar(name) {
     return name ? name.charAt(0).toUpperCase() : '?';
 }
@@ -119,6 +145,7 @@ function timeAgo(dateString) {
                                 Like
                             </button>
                             <button
+                                @click="toggleCommentForm(post.id)"
                                 class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition-colors">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -148,6 +175,16 @@ function timeAgo(dateString) {
                                 </button>
                             </template>
                         </div>
+
+                        <form v-if="activeCommentPostId === post.id" @submit.prevent="submitComment(post.id)" class="mt-4">
+                            <textarea v-model="commentForm.content" placeholder="Write a comment..."
+                                class="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                            <p v-if="commentForm.errors.content" class="text-red-500 text-sm mt-1">{{ commentForm.errors.content }}</p>
+                            <button type="submit"
+                                class="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                Comment
+                            </button>
+                        </form>
 
                         <div v-if="post.comments && post.comments.length > 0" class="mt-4 space-y-2">
                             <p class="text-xs font-semibold uppercase tra cking-wide text-gray-400 mb-2">
