@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
-use Illuminate\Http\Request;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class PostController extends Controller
 {
@@ -77,4 +81,71 @@ class PostController extends Controller
         return response()->json($posts);
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StorePostRequest $request)
+    {
+        $post = new Post();
+        $post->content = $request->input('content');
+        $post->uuid = (string) Str::uuid(); // Generate a UUID for the post
+        $post->user_id = auth()->id(); // Assuming you have authentication set up
+        $post->save();
+
+        return redirect()->route('posts.index')->with('success', 'Post created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Post $post)
+    {
+        dd($post);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Post $post)
+    {
+        // $this->authorize('update', $post);
+
+        return Inertia::render('Posts/Edit', [
+            'post' => [
+                'id' => $post->id,
+                'content' => $post->content,
+            ],
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdatePostRequest $request, Post $post)
+    {
+        $post->content = $request->input('content');
+        $post->save();
+
+        return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Post $post)
+    {
+        // $this->authorize('delete', $post);
+
+        $post->delete();
+
+        return redirect()->route('posts.index')->with('success', 'Post deleted successfully.');
+    }
+
+    public function generatePdf() {
+        $posts = Auth::user()->posts()->with('comments')->get();
+
+        $pdf = PDF::loadView('posts.index', compact('posts'));
+
+        return $pdf->download('posts.pdf');
+    }
 }
