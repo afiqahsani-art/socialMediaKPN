@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -26,6 +28,38 @@ class PostController extends Controller
         // Load posts with related user and comments, newest first
         $posts = Post::with('user', 'comments.user')->latest()->get();
         $name = 'Afiqah'; // Example name, you can replace this with dynamic data as needed
+
+        // if($filter == null){
+        //     abort(404);
+        // }
+        // dd($filter);
+        // $posts = DB::select('SELECT * FROM posts where user_id = ? ORDER BY created_at DESC', [$filter]);
+
+        // dd($posts);
+
+        $posts = Post::with('user', 'comments.user')->latest()->get()->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'content' => $post->content,
+                'created_at' => $post->created_at,
+                'user' => [
+                    'id' => $post->user->id,
+                    'name' => $post->user->name,
+                ],
+                'comments' => $post->comments->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'content' => $comment->content,
+                        'created_at' => $comment->created_at,
+                        'user' => [
+                            'id' => $comment->user->id,
+                            'name' => $comment->user->name,
+                        ],
+                    ];
+                }),
+            ];
+        });
+        $name = 'John Doe';
         return Inertia::render('Posts/Index', [
             'posts' => $posts,
             'name' => $name,
@@ -46,13 +80,15 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-       // Create and save a new post associated with the authenticated user
-       $post = $request->user()->posts()->latest()->create([
-           'content' => $request->input('content'),
-       ]);
+        $post = new Post();
+        $post->content = $request->input('content');
+        $post->uuid = (string) Str::uuid(); // Generate a UUID for the post
+        $post->user_id = auth()->id(); // Assuming you have authentication set up
+        $post->save();
 
-        return redirect()->route('posts.index')->with('success', 'Post created successfully!');
+        return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
+
     public function message()
     {
         return [
@@ -67,7 +103,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        //
+        dd($post);
     }
 
     /**
@@ -75,6 +111,8 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
+        // $this->authorize('update', $post);
+
         return Inertia::render('Posts/Edit', [
             'post' => [
                 'id' => $post->id,
@@ -99,6 +137,8 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        // $this->authorize('delete', $post);
+
         $post->delete();
 
         return redirect()->route('posts.index')->with('success', 'Post deleted successfully.');

@@ -24,20 +24,17 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => ['required', 'string', 'min:3', 'max:255'],
+            'content' => ['required', 'string', 'max:255', 'min:5'],
         ];
     }
 
-    /**
-     * Custom validation messages for post creation.
-     */
     public function messages(): array
     {
         return [
-            'content.required' => 'Sis, fill in the post content. Danke.',
-            'content.string' => 'Must be string ah.',
-            'content.min' => 'Min 3 characters.',
-            'content.max' => 'Max is 255 ny.',
+            'content.required' => 'Sila masukkan kandungan pos.',
+            'content.string' => 'Kandungan pos mesti berupa teks.',
+            'content.max' => 'Kandungan pos tidak boleh melebihi 255 aksara.',
+            'content.min' => 'Kandungan pos mesti sekurang-kurangnya 5 aksara.',
         ];
     }
 }

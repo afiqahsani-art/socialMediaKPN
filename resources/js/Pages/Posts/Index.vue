@@ -1,35 +1,66 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { Head, useForm, usePage, router } from '@inertiajs/vue3';
+import { ref, computed, watch } from 'vue';
 
 defineProps({
     posts: Array,
     name: String,
 });
 
-const authUser = usePage().props.auth.user;
+const page = usePage();
+
+const authUser = page.props.auth.user;
+const flashSuccess = computed(() => page.props.flash.success);
+
+// watch(flashSuccess, (newValue) => {
+//     if (newValue) {
+//         // alert(newValue); // You can replace this with a more user-friendly notification system
+//     }
+// });
 
 const postForm = useForm({
     content: '',
 });
 
-const activeCommentForms = reactive({});
-
 function submitForm() {
-    postForm.post(route('posts.store'), {
+    postForm.post('/posts', {
         onSuccess: () => {
             postForm.reset();
+        },
+        onError: (errors) => {
+            console.error(errors);
         },
     });
 }
 
-function submitComment(postId, commentForm) {
-    commentForm.post(route('comments.store', { post: postId }), {
+function deletePost(id) {
+    if (confirm('Delete this post?')) {
+        router.delete(route('posts.destroy', id));
+    }
+}
+
+const activeCommentPostId = ref(null);
+
+const commentForm = useForm({
+    content: '',
+});
+
+function toggleCommentForm(postId) {
+    if (activeCommentPostId.value === postId) {
+        activeCommentPostId.value = null; // Close the comment form if it's already open for this post
+    } else {
+        activeCommentPostId.value = postId; // Open the comment form for this post
+    }
+}
+
+function submitComment(postId) {
+    commentForm.post(route('comments.store', postId), {
         onSuccess: () => {
             commentForm.reset();
-            activeCommentForms[postId] = null; // Reset the active comment form for this post
+            activeCommentPostId.value = null; // Reset the active comment post ID after successful submission
         },
-        onError: () => {
+        onError: (errors) => {
             console.error(errors);
         },
     });
@@ -64,18 +95,28 @@ function timeAgo(dateString) {
 
         <div class="py-8">
             <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-                <!-- Post Form-->
-                <form @submit.prevent="submitForm" class="mb-6">
-                    <textarea v-model="postForm.content" placeholder="What's on your mind?"
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
-                    <p v-if="postForm.errors.content" class="mt-1 text-sm text-red-600">{{ postForm.errors.content }}</p>
-                    <div class="mt-2 flex justify-end">
-                        <button type="submit" :disabled="postForm.processing"
-                            class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50 disabled:opacity-50">
-                            Post
-                        </button>
+                <div v-if="flashSuccess" class="bg-green-100 p-4 rounded-lg mb-4">
+                    {{ flashSuccess }}
+                </div>
+
+                <!-- Create Post Form -->
+                <div class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold text-white">
+                            {{ avatar(authUser?.name) }}
+                        </div>
+                    <div class="p-5">
+                        <form @submit.prevent="submitForm">
+                            <textarea v-model="postForm.content" placeholder="What's on your mind?"
+                                class="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                            <p v-if="postForm.errors.content" class="text-red-500 text-sm mt-1">{{ postForm.errors.content }}</p>
+                            <button type="submit"
+                                class="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                Post
+                            </button>
+                        </form>
                     </div>
-                </form>
+                </div>
+
                 <div v-for="post in posts" :key="post.id"
                     class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
                     <div class="p-5">
@@ -105,6 +146,7 @@ function timeAgo(dateString) {
                                 Like
                             </button>
                             <button
+                                @click="toggleCommentForm(post.id)"
                                 class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition-colors">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -112,26 +154,55 @@ function timeAgo(dateString) {
                                 </svg>
                                 Comment
                             </button>
+
+                            <template v-if="post.user?.id === authUser?.id">
+                                <a
+                                    :href="route('posts.edit', post.id)"
+                                    class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition-colors ml-auto">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit
+                                </a>
+                                <button
+                                    @click="deletePost(post.id)"
+                                    class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-red-600 transition-colors">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </template>
                         </div>
+
+                        <form v-if="activeCommentPostId === post.id" @submit.prevent="submitComment(post.id)" class="mt-4">
+                            <textarea v-model="commentForm.content" placeholder="Write a comment..."
+                                class="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                            <p v-if="commentForm.errors.content" class="text-red-500 text-sm mt-1">{{ commentForm.errors.content }}</p>
+                            <button type="submit"
+                                class="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                Comment
+                            </button>
+                        </form>
 
                         <div v-if="post.comments && post.comments.length > 0" class="mt-4 space-y-2">
                             <p class="text-xs font-semibold uppercase tra cking-wide text-gray-400 mb-2">
                                 Comments ({{ post.comments.length }})
                             </p>
-                            <div v-for="comment in post.comments" :key="comment.id"
-                                class="flex items-start gap-3">
-                                <div
-                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                            <div v-for="comment in post.comments" :key="comment.id" class="flex items-start gap-2 rounded-lg bg-gray-50 p3">
+                                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-rose-500 text-xs font-semibold text-white">
                                     {{ avatar(comment.user?.name) }}
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-900">{{ comment.user?.name }}</p>
                                     <p class="text-sm text-gray-700">{{ comment.content }}</p>
                                     <p class="text-xs text-gray-400">{{ timeAgo(comment.created_at) }}</p>
-                                </div>                      
+                                </div>
                             </div>
                         </div>
-                        <div v-else class="text-sm text-gray-500">No comments yet.</div>
+                        <p v-else class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">No Comments Yet</p>
                     </div>
                 </div>
             </div>
