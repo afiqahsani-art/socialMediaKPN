@@ -8,6 +8,7 @@ use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use App\Models\User;
 use App\Notifications\PostCreatedNotification;
+use App\Notifications\PostCreatedDbNotification;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,6 +109,8 @@ class PostController extends Controller
         // Send the notification to all other users after the post is created
         $otherUsers = User::where('id', '!=', auth()->id())->get();
         Notification::send($otherUsers, new PostCreatedNotification($post, auth()->user()));
+
+        $user->notify(new PostCreatedDbNotification($post, auth()->user()));
 
         return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }

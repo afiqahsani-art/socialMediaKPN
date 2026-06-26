@@ -7,16 +7,18 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PostCreatedDbNotification extends Notification
-{
+class PostCreatedDbNotification extends Notification {
     use Queueable;
 
+    public $post;
+    public $user;
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($post, $user)
     {
-        //
+        $this->post = $post;
+        $this->user = $user;
     }
 
     /**
@@ -26,7 +28,7 @@ class PostCreatedDbNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database'];
     }
 
     /**
@@ -35,8 +37,9 @@ class PostCreatedDbNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
+            ->greeting('Hello!')
+            ->line('Just want to inform you that '.$this->user->name.' has created a new post.')
+            ->action('Let\'s check it out', url('/posts/'.$this->post->uuid))
             ->line('Thank you for using our application!');
     }
 
@@ -49,6 +52,16 @@ class PostCreatedDbNotification extends Notification
     {
         return [
             //
+        ];
+    }
+
+    public function toDatabase(object $notifiable)
+    {
+        return [
+            'post_id' => $this->post->id,
+            'post_content' => $this->post->content,
+            'user_id' => $this->user->id,
+            'user_name' => $this->user->name,
         ];
     }
 }
