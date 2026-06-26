@@ -39,8 +39,23 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'notifications' => function () use ($request) {
-                if ($request->user()) {
-                    return $request->user()->unreadNotifications->map(function ($notification) {
+
+                if(! $request->user()){
+                    return [
+                        'unread_count' => 0,
+                        'items' => [],
+                    ];
+                }
+
+                $notifications = $request->user()
+                    ->unreadNotifications()
+                    ->latest()
+                    ->take(10)
+                    ->get();
+
+                return [
+                    'unread_count' => $request->user()->unreadNotifications()->count(),
+                    'items' => $notifications->map(function ($notification) {
                         return [
                             'id' => $notification->id,
                             'post_id' => $notification->data['post_id'] ?? null,
@@ -52,13 +67,9 @@ class HandleInertiaRequests extends Middleware
                             'type' => $notification->type,
                             'created_at' => $notification->created_at->diffForHumans(),
                         ];
-                    });
-                }else{
-                    return [
-                        'unread_count' => 0,
-                        'items' => [],
-                    ];
-                }
+                    }),
+                ];
+
             },
         ];
     }
