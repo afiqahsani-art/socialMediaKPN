@@ -182,7 +182,7 @@ class PostController extends Controller
 
         return Inertia::render('Posts/Edit', [
             'post' => [
-                'id' => $post->id,
+                'uuid' => $post->uuid,
                 'content' => $post->content,
             ],
         ]);
