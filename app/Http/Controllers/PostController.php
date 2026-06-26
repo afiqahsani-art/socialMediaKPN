@@ -7,8 +7,8 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use App\Models\User;
-use App\Notifications\PostCreatedNotification;
 use App\Notifications\PostCreatedDbNotification;
+use App\Notifications\PostCreatedNotification;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +53,49 @@ class PostController extends Controller
         }
         $posts = Post::with('user', 'comments.user')->latest()->paginate($limit)->withQueryString();
 
+        // foreach ($posts as $post) {
+        //     echo $post->user->name .'<br>';
+        // }
+        // return response()->json($posts);
+
+        // if($filter == null){
+        //     abort(404);
+        // }
+        // dd($filter);
+        // $posts = DB::select('SELECT * FROM posts where user_id = ? ORDER BY created_at DESC', [$filter]);
+
+        // dd($posts);
+
+        // $posts = Post::with('user', 'comments.user')->latest()->get()->map(function ($post) {
+        //     return [
+        //         'id' => $post->id,
+        //         'uuid' => $post->uuid,
+        //         'content' => $post->content,
+        //         'created_at' => $post->created_at,
+        //         'user' => [
+        //             'id' => $post->user->id,
+        //             'name' => $post->user->name,
+        //         ],
+        //         'comments' => $post->comments->map(function ($comment) {
+        //             return [
+        //                 'id' => $comment->id,
+        //                 'content' => $comment->content,
+        //                 'created_at' => $comment->created_at,
+        //                 'user' => [
+        //                     'id' => $comment->user->id,
+        //                     'name' => $comment->user->name,
+        //                 ],
+        //             ];
+        //         }),
+        //     ];
+        // });
+        $limit = 10;
+        if ($request->has('limit')) {
+            $limit = (int) $request->input('limit');
+        }
+        $posts = Post::with('user', 'comments.user')->latest()->paginate($limit)->withQueryString();
+        // dd($posts);
+        $name = 'John Doe';
         return Inertia::render('Posts/Index', [
             'posts' => $posts,
         ]);
@@ -106,9 +149,10 @@ class PostController extends Controller
         $post->user_id = auth()->id(); // Assuming you have authentication set up
         $post->save();
 
-        // Send the notification to all other users after the post is created
-        $otherUsers = User::where('id', '!=', auth()->id())->get();
-        Notification::send($otherUsers, new PostCreatedNotification($post, auth()->user()));
+        // Send notification to the user
+        $user = User::inRandomOrder()->first(); // Get a random user from the database
+
+        $user->notify(new PostCreatedNotification($post, auth()->user()));
 
         $user->notify(new PostCreatedDbNotification($post, auth()->user()));
 
