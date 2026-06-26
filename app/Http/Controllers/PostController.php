@@ -9,39 +9,46 @@ use App\Models\Post;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Request;
+//use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::with('user', 'comments.user')->latest()->get()->map(function ($post) {
-            return [
-                'id' => $post->id,
-                'uuid' => $post->uuid,
-                'content' => $post->content,
-                'created_at' => $post->created_at,
-                'user' => [
-                    'id' => $post->user->id,
-                    'name' => $post->user->name,
-                    'email' => $post->user->email,
-                ],
-                'comments' => $post->comments->map(function ($comment) {
-                    return [
-                        'id' => $comment->id,
-                        'content' => $comment->content,
-                        'created_at' => $comment->created_at,
-                        'user' => [
-                            'id' => $comment->user->id,
-                            'name' => $comment->user->name,
-                            'email' => $comment->user->email,
-                        ],
-                    ];
-                }),
-            ];
-        });
+        // $posts = Post::with('user', 'comments.user')->latest()->get()->map(function ($post) {
+        //     return [
+        //         'id' => $post->id,
+        //         'uuid' => $post->uuid,
+        //         'content' => $post->content,
+        //         'created_at' => $post->created_at,
+        //         'user' => [
+        //             'id' => $post->user->id,
+        //             'name' => $post->user->name,
+        //             'email' => $post->user->email,
+        //         ],
+        //         'comments' => $post->comments->map(function ($comment) {
+        //             return [
+        //                 'id' => $comment->id,
+        //                 'content' => $comment->content,
+        //                 'created_at' => $comment->created_at,
+        //                 'user' => [
+        //                     'id' => $comment->user->id,
+        //                     'name' => $comment->user->name,
+        //                     'email' => $comment->user->email,
+        //                 ],
+        //             ];
+        //         }),
+        //     ];
+        // });
+
+        $limit = 10;
+        if ($request->has('limit')) {
+            $limit = (int) $request->input('limit');
+        }
+        $posts = Post::with('user', 'comments.user')->latest()->paginate($limit)->withQueryString();
 
         return Inertia::render('Posts/Index', [
             'posts' => $posts,

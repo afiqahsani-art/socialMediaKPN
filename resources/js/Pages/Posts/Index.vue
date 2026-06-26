@@ -100,6 +100,7 @@ function timeAgo(dateString) {
                 </div>
 
                 <!-- Create Post Form -->
+             <div v-for="(post, index) in posts.data" :key="post.id"
                 <div class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
                      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold text-white">
                             {{ avatar(authUser?.name) }}
@@ -117,7 +118,7 @@ function timeAgo(dateString) {
                     </div>
                 </div>
 
-                <div v-for="post in posts" :key="post.id"
+                <div v-for="(post, index) in posts.data" :key="post.id"
                     class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
                     <div class="p-5">
                         <!-- Author -->
@@ -203,6 +204,24 @@ function timeAgo(dateString) {
                             </div>
                         </div>
                         <p v-else class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">No Comments Yet</p>
+                    </div>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2" v-if="!posts || posts.length === 0">Tiada Data Post</p>
+                <div v-else>
+                    <div class="mt-4">
+                        <button
+                            v-if="posts.current_page > 1"
+                            @click="router.get(route('posts.index', { page: posts.current_page - 1 }))"
+                            class="mr-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-50">
+                            Previous
+                        </button>
+                        Showing page {{ posts.current_page }} of {{ posts.last_page }} ({{posts.data.length}} of {{ posts.total }} total posts)
+                        <button
+                            v-if="posts.current_page < posts.last_page"
+                            @click="router.get(route('posts.index', { page: posts.current_page + 1 }))"
+                            class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-50">
+                            Next
+                        </button>
                     </div>
                 </div>
             </div>

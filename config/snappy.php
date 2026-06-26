@@ -39,9 +39,9 @@ return [
         'timeout' => false,
         'options' => [],
         'env'     => [
-            'TMP' => storage_path('app/snappy'),
-            'TEMP' => storage_path('app/snappy'),
-            'TMPDIR' => storage_path('app/snappy'),
+            'TMP' => env('SNAPPY_TEMP_DIR', 'D:\\temp'),
+            'TEMP' => env('SNAPPY_TEMP_DIR', 'D:\\temp'),
+            'TMPDIR' => env('SNAPPY_TEMP_DIR', 'D:\\temp'),
         ],
     ],
     
@@ -51,9 +51,9 @@ return [
         'timeout' => false,
         'options' => [],
         'env'     => [
-            'TMP' => storage_path('app/snappy'),
-            'TEMP' => storage_path('app/snappy'),
-            'TMPDIR' => storage_path('app/snappy'),
+            'TMP' => env('SNAPPY_TEMP_DIR', 'D:\\temp'),
+            'TEMP' => env('SNAPPY_TEMP_DIR', 'D:\\temp'),
+            'TMPDIR' => env('SNAPPY_TEMP_DIR', 'D:\\temp'),
         ],
     ],
 
