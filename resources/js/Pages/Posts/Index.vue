@@ -100,11 +100,10 @@ function timeAgo(dateString) {
                 </div>
 
                 <!-- Create Post Form -->
-             <div v-for="(post, index) in posts.data" :key="post.id"
                 <div class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
-                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold text-white">
-                            {{ avatar(authUser?.name) }}
-                        </div>
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold text-white">
+                        {{ avatar(authUser?.name) }}
+                    </div>
                     <div class="p-5">
                         <form @submit.prevent="submitForm">
                             <textarea v-model="postForm.content" placeholder="What's on your mind?"
