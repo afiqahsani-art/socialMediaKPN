@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -41,7 +43,9 @@ class PostController extends Controller
             ];
         });
 
-        return response()->json($posts);
+        return Inertia::render('Posts/Index', [
+            'posts' => $posts,
+        ]);
     }
 
     public function myposts(Request $request)

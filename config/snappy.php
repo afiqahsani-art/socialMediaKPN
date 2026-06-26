@@ -38,7 +38,11 @@ return [
         'binary'  => env('WKHTML_PDF_BINARY', '/usr/local/bin/wkhtmltopdf'),
         'timeout' => false,
         'options' => [],
-        'env'     => [],
+        'env'     => [
+            'TMP' => storage_path('app/snappy'),
+            'TEMP' => storage_path('app/snappy'),
+            'TMPDIR' => storage_path('app/snappy'),
+        ],
     ],
     
     'image' => [
@@ -46,7 +50,11 @@ return [
         'binary'  => env('WKHTML_IMG_BINARY', '/usr/local/bin/wkhtmltoimage'),
         'timeout' => false,
         'options' => [],
-        'env'     => [],
+        'env'     => [
+            'TMP' => storage_path('app/snappy'),
+            'TEMP' => storage_path('app/snappy'),
+            'TMPDIR' => storage_path('app/snappy'),
+        ],
     ],
 
 ];
