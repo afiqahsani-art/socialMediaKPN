@@ -4,7 +4,7 @@ import { Head, useForm, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 
 defineProps({
-    posts: Array,
+    posts: Object,
     name: String,
 });
 

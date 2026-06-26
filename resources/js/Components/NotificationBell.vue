@@ -1,9 +1,9 @@
 <script setup>
-import { computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 
-const page = usePage();
-const open = ref(false);
+const page = usePage()
+const open = ref(false)
 
 const notifications = computed(() => {
     return page.props.notifications?.items ?? []
