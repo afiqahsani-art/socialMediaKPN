@@ -100,14 +100,17 @@ function timeAgo(dateString) {
 
                 <!-- Create Post Form -->
                 <div class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
-                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold text-white">
-                            {{ avatar(authUser?.name) }}
-                        </div>
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-semibold text-white">
+                        {{ avatar(authUser?.name) }}
+                    </div>
                     <div class="p-5">
                         <form @submit.prevent="submitForm">
                             <textarea v-model="postForm.content" placeholder="What's on your mind?"
                                 class="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
-                            <p v-if="postForm.errors.content" class="text-red-500 text-sm mt-1">{{ postForm.errors.content }}</p>
+                            <p v-if="postForm.errors.content" class="text-red-500 text-sm mt-1">{{
+                                postForm.errors.content }}
+                            </p>
                             <button type="submit"
                                 class="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 Post
@@ -115,7 +118,17 @@ function timeAgo(dateString) {
                         </form>
                     </div>
                 </div>
-
+                <div class="mt-4">
+                    <label for="limit" class="mr-2 text-sm font-semibold text-gray-700">Posts per page:</label>
+                    <select id="limit" v-model="posts.per_page"
+                        @change="router.get(route('posts.index', { limit: posts.per_page }))"
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
                 <div v-for="(post, index) in posts.data" :key="post.id"
                     class="mb-5 rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
                     <div class="p-5">
@@ -134,6 +147,7 @@ function timeAgo(dateString) {
                         <!-- Content -->
                         <p class="text-gray-800 leading-relaxed mb-4">{{ post.content }}</p>
 
+
                         <!-- Actions -->
                         <div class="flex gap-1 border-t border-gray-100 pt-3">
                             <button
@@ -145,8 +159,7 @@ function timeAgo(dateString) {
                                 Like
                             </button>
 
-                            <button
-                                @click="toggleCommentForm(post.id)"
+                            <button @click="toggleCommentForm(post.id)"
                                 class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition-colors">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -156,8 +169,7 @@ function timeAgo(dateString) {
                             </button>
 
                             <template v-if="post.user?.id === authUser?.id">
-                                <a
-                                    :href="route('posts.edit', post.id)"
+                                <a :href="route('posts.edit', post.id)"
                                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-indigo-600 transition-colors ml-auto">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -165,8 +177,7 @@ function timeAgo(dateString) {
                                     </svg>
                                     Edit
                                 </a>
-                                <button
-                                    @click="deletePost(post.id)"
+                                <button @click="deletePost(post.id)"
                                     class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100 hover:text-red-600 transition-colors">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -177,10 +188,13 @@ function timeAgo(dateString) {
                             </template>
                         </div>
 
-                        <form v-if="activeCommentPostId === post.id" @submit.prevent="submitComment(post.uuid)" class="mt-4">
+                        <form v-if="activeCommentPostId === post.id" @submit.prevent="submitComment(post.uuid)"
+                            class="mt-4">
                             <textarea v-model="commentForm.content" placeholder="Write a comment..."
                                 class="w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
-                            <p v-if="commentForm.errors.content" class="text-red-500 text-sm mt-1">{{ commentForm.errors.content }}</p>
+                            <p v-if="commentForm.errors.content" class="text-red-500 text-sm mt-1">{{
+                                commentForm.errors.content
+                                }}</p>
                             <button type="submit"
                                 class="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                 Comment
@@ -191,8 +205,10 @@ function timeAgo(dateString) {
                             <p class="text-xs font-semibold uppercase tra cking-wide text-gray-400 mb-2">
                                 Comments ({{ post.comments.length }})
                             </p>
-                            <div v-for="comment in post.comments" :key="comment.id" class="flex items-start gap-2 rounded-lg bg-gray-50 p3">
-                                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-rose-500 text-xs font-semibold text-white">
+                            <div v-for="comment in post.comments" :key="comment.id"
+                                class="flex items-start gap-2 rounded-lg bg-gray-50 p3">
+                                <div
+                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-400 to-rose-500 text-xs font-semibold text-white">
                                     {{ avatar(comment.user?.name) }}
                                 </div>
                                 <div>
@@ -202,27 +218,39 @@ function timeAgo(dateString) {
                                 </div>
                             </div>
                         </div>
-                        <p v-else class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">No Comments Yet</p>
+                        <p v-else class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">No Comments
+                            Yet</p>
                     </div>
                 </div>
 
-                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2" v-if="!posts || posts.length === 0">Tiada Data Post</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2"
+                    v-if="!posts || posts.length === 0">
+                    Tiada Data Post</p>
                 <div v-else>
                     <div class="mt-4">
-                        <button
-                            v-if="posts.current_page > 1"
+                        <button v-if="posts.current_page > 1"
                             @click="router.get(route('posts.index', { page: posts.current_page - 1 }))"
                             class="mr-2 rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-50">
                             Previous
                         </button>
-                        Showing page {{ posts.current_page }} of {{ posts.last_page }} ({{posts.data.length}} of {{ posts.total }} total posts)
-                        <button
-                            v-if="posts.current_page < posts.last_page"
+                        Showing page {{ posts.current_page }} of {{ posts.last_page }} ({{ posts.data.length }} of {{
+                        posts.total
+                        }} total posts)
+                        <button v-if="posts.current_page < posts.last_page"
                             @click="router.get(route('posts.index', { page: posts.current_page + 1 }))"
                             class="rounded-lg bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-50">
                             Next
                         </button>
                     </div>
+                    <div class="mt-4">
+                        <button v-for="page in posts.last_page" :key="page"
+                            @click="router.get(route('posts.index', { page: page }))"
+                            :class="{'bg-gray-300': page === posts.current_page, 'bg-gray-200': page !== posts.current_page}"
+                            class="mr-2 rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring focus:ring-gray-200 focus:ring-opacity-50">
+                            {{ page }}
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
