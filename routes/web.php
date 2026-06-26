@@ -39,6 +39,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
     Route::post('/comments/{post}', [CommentController::class, 'store'])->name('comments.store');
+
+    Route::post('/notifications/{notification}/read', function ($notificationId) {
+        $notification = auth()->user()->unreadNotifications()->find($notificationId);
+
+        if ($notification) {
+            $notification->markAsRead();
+        }
+
+        return redirect()->back();
+    })->name('notifications.read');
 });
 
 require __DIR__.'/auth.php';

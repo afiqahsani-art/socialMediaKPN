@@ -103,6 +103,8 @@ class PostController extends Controller
 
         $user->notify(new PostCreatedDbNotification($post, auth()->user()));
 
+        Auth::user()->notify(new PostCreatedDbNotification($post, auth()->user()));
+
         return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
 
