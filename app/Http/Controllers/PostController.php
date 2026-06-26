@@ -6,18 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // $posts = Post::with('user')->get(); // Eager load the user relationship
         // $posts = Post::get(); // Lazy load the user relationship
@@ -36,29 +37,35 @@ class PostController extends Controller
 
         // dd($posts);
 
-        $posts = Post::with('user', 'comments.user')->latest()->get()->map(function ($post) {
-            return [
-                'id' => $post->id,
-                'uuid' => $post->uuid,
-                'content' => $post->content,
-                'created_at' => $post->created_at,
-                'user' => [
-                    'id' => $post->user->id,
-                    'name' => $post->user->name,
-                ],
-                'comments' => $post->comments->map(function ($comment) {
-                    return [
-                        'id' => $comment->id,
-                        'content' => $comment->content,
-                        'created_at' => $comment->created_at,
-                        'user' => [
-                            'id' => $comment->user->id,
-                            'name' => $comment->user->name,
-                        ],
-                    ];
-                }),
-            ];
-        });
+        // $posts = Post::with('user', 'comments.user')->latest()->get()->map(function ($post) {
+        //     return [
+        //         'id' => $post->id,
+        //         'uuid' => $post->uuid,
+        //         'content' => $post->content,
+        //         'created_at' => $post->created_at,
+        //         'user' => [
+        //             'id' => $post->user->id,
+        //             'name' => $post->user->name,
+        //         ],
+        //         'comments' => $post->comments->map(function ($comment) {
+        //             return [
+        //                 'id' => $comment->id,
+        //                 'content' => $comment->content,
+        //                 'created_at' => $comment->created_at,
+        //                 'user' => [
+        //                     'id' => $comment->user->id,
+        //                     'name' => $comment->user->name,
+        //                 ],
+        //             ];
+        //         }),
+        //     ];
+        // });
+        $limit = 10;
+        if ($request->has('limit')) {
+            $limit = (int) $request->input('limit');
+        }
+        $posts = Post::with('user', 'comments.user')->latest()->paginate($limit)->withQueryString();
+        // dd($posts);
         $name = 'John Doe';
         return Inertia::render('Posts/Index', [
             'posts' => $posts,
