@@ -7,6 +7,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use App\Models\User;
+use App\Notifications\PostCreatedDbNotification;
 use App\Notifications\PostCreatedNotification;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 use Illuminate\Http\Request;
@@ -99,6 +100,8 @@ class PostController extends Controller
         $user = User::inRandomOrder()->first(); // Get a random user from the database
 
         $user->notify(new PostCreatedNotification($post, auth()->user()));
+
+        $user->notify(new PostCreatedDbNotification($post, auth()->user()));
 
         return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
